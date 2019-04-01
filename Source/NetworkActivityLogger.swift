@@ -35,6 +35,9 @@ public enum NetworkActivityLoggerLevel {
     /// Logs HTTP method, URL, header fields, & request body for requests, and status code, URL, header fields, response string, & elapsed time for responses.
     case debug
     
+    /// Logs HTTP method & URL for requests, and status code, URL, & elapsed time for responses + response string for failed responses
+    case infoWithFailed
+    
     /// Logs HTTP method & URL for requests, and status code, URL, & elapsed time for responses.
     case info
     
@@ -121,18 +124,11 @@ public class NetworkActivityLogger {
         startDates[task] = Date()
         
         switch level {
-        case .debug:
-            logDivider()
+        case .debug, .infoWithFailed:
+            print("🌎 🚀 \(httpMethod) '\(requestURL.absoluteString)':")
             
-            print("\(httpMethod) '\(requestURL.absoluteString)':")
-            
-            if let httpHeadersFields = request.allHTTPHeaderFields {
-                logHeaders(headers: httpHeadersFields)
-            }
-            
-            if let httpBody = request.httpBody, let httpBodyString = String(data: httpBody, encoding: .utf8) {
-                print(httpBodyString)
-            }
+            logFull(request: request)
+
         case .info:
             logDivider()
             
@@ -208,6 +204,20 @@ public class NetworkActivityLogger {
             default:
                 break
             }
+        }
+    }
+    
+    fileprivate func logFull(request: URLRequest) {
+        print("🌎 📤")
+        if let httpHeadersFields = request.allHTTPHeaderFields {
+            for (key, value) in httpHeadersFields {
+                print("\(key): \(value)")
+            }
+        }
+        
+        if let httpBody = request.httpBody, let httpBodyString = String(data: httpBody, encoding: .utf8) {
+            print("🌎 📦")
+            print(httpBodyString)
         }
     }
 }
